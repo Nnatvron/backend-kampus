@@ -11,6 +11,8 @@ app.use(
     origin: [
       "http://localhost:5173",
       "https://web-kampus.vercel.app"
+      "https://backend-kampus.vercel.app/"
+      "https://ubsioneplus.vercel.app/"
     ],
     credentials: true,
   })
