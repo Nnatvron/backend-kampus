@@ -1,4 +1,6 @@
 // server.js
+import { createServer } from "http";
+import app from "./api/auth"; // kalau pakai struktur api/
 import express from "express";
 import cors from "cors";
 import bodyParser from "body-parser";
