@@ -3,25 +3,38 @@ import express from "express";
 import cors from "cors";
 import bodyParser from "body-parser";
 import admin from "firebase-admin";
+import nodemailer from "nodemailer";
+import dotenv from "dotenv";
 
-// ======= INIT FIREBASE ADMIN =======
-import serviceAccount from "./serviceAccountKey.json"; // path serviceAccount JSON
+dotenv.config();
+
+// ===== INIT FIREBASE ADMIN =====
+import serviceAccount from "./serviceAccountKey.json"; // sesuaikan path
 admin.initializeApp({
   credential: admin.credential.cert(serviceAccount),
 });
 
 const app = express();
 
-// ======= CORS =======
+// ===== CORS =====
 app.use(cors({
-  origin: "https://ubsioneplus.vercel.app",
+  origin: ["https://ubsioneplus.vercel.app", "http://localhost:5173"],
   methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
   credentials: true,
 }));
 
 app.use(bodyParser.json());
 
-// ======= ROUTES =======
+// ===== NODEMAILER TRANSPORT =====
+const transporter = nodemailer.createTransport({
+  service: 'gmail', // bisa diganti SMTP lain
+  auth: {
+    user: process.env.EMAIL_USER,
+    pass: process.env.EMAIL_PASS,
+  },
+});
+
+// ===== ROUTES =====
 
 // -------- REGISTER --------
 app.post("/api/auth/register", async (req, res) => {
@@ -37,7 +50,7 @@ app.post("/api/auth/register", async (req, res) => {
       displayName: nama,
     });
 
-    // Bisa simpan data tambahan ke Firestore kalau perlu
+    // opsional: simpan data tambahan ke Firestore
     return res.status(201).json({ message: "Registrasi berhasil!", user: userRecord });
   } catch (err) {
     console.error(err);
@@ -46,16 +59,14 @@ app.post("/api/auth/register", async (req, res) => {
 });
 
 // -------- LOGIN --------
+// Backend hanya generate custom token, validasi password tetap frontend
 app.post("/api/auth/login", async (req, res) => {
   const { email, password } = req.body;
   if (!email || !password) return res.status(400).json({ message: "Email dan password wajib diisi!" });
 
   try {
-    // Login via Firebase Admin tidak bisa cek password secara langsung
-    // Solusi: gunakan Firebase Auth SDK di frontend, tapi kita bisa generate custom token
+    // frontend handle password via Firebase Auth SDK
     const user = await admin.auth().getUserByEmail(email);
-
-    // Generate custom token
     const token = await admin.auth().createCustomToken(user.uid);
 
     return res.status(200).json({
@@ -65,11 +76,11 @@ app.post("/api/auth/login", async (req, res) => {
         uid: user.uid,
         email: user.email,
         displayName: user.displayName,
-      }
+      },
     });
   } catch (err) {
     console.error(err);
-    return res.status(401).json({ message: "Login gagal, email tidak ditemukan atau salah password." });
+    return res.status(401).json({ message: "Login gagal, email tidak ditemukan." });
   }
 });
 
@@ -80,12 +91,17 @@ app.post("/api/auth/forgot-password", async (req, res) => {
 
   try {
     const link = await admin.auth().generatePasswordResetLink(email, {
-      url: "https://ubsioneplus.vercel.app/login", // redirect setelah reset
+      url: "https://ubsioneplus.vercel.app/login",
       handleCodeInApp: true,
     });
 
-    // Kalau mau kirim email pakai nodemailer
-    // await transporter.sendMail({ to: email, subject: "Reset Password", html: `<a href="${link}">${link}</a>` });
+    // kirim email
+    await transporter.sendMail({
+      from: process.env.EMAIL_USER,
+      to: email,
+      subject: "Reset Password UBSI",
+      html: `<p>Klik link berikut untuk reset password:</p><a href="${link}">${link}</a>`,
+    });
 
     return res.status(200).json({ message: "Link reset password telah dikirim ke email Anda." });
   } catch (err) {
@@ -94,30 +110,27 @@ app.post("/api/auth/forgot-password", async (req, res) => {
   }
 });
 
-// -------- RESET PASSWORD --------
-// Biasanya frontend handle langsung pakai Firebase SDK
-// Tapi bisa pakai route backend jika ingin
+// -------- RESET PASSWORD (optional) --------
+// biasanya frontend handle confirmPasswordReset
 app.post("/api/auth/reset-password", async (req, res) => {
-  const { oobCode, newPassword } = req.body;
-  if (!oobCode || !newPassword) return res.status(400).json({ message: "Data reset wajib diisi!" });
+  const { uid, newPassword } = req.body;
+  if (!uid || !newPassword) return res.status(400).json({ message: "Data reset wajib diisi!" });
 
   try {
-    await admin.auth().verifyPasswordResetCode(oobCode);
-    await admin.auth().confirmPasswordReset(oobCode, newPassword);
-
+    await admin.auth().updateUser(uid, { password: newPassword });
     return res.status(200).json({ message: "Password berhasil direset!" });
   } catch (err) {
     console.error(err);
-    return res.status(500).json({ message: "Gagal reset password, link mungkin sudah kadaluarsa." });
+    return res.status(500).json({ message: "Gagal reset password." });
   }
 });
 
-// -------- DEFAULT --------
+// -------- DEFAULT ROUTE --------
 app.all("*", (req, res) => {
   res.status(404).json({ message: "Route tidak ditemukan" });
 });
 
-// ======= SERVER =======
+// ===== START SERVER =====
 const port = process.env.PORT || 3000;
 app.listen(port, () => {
   console.log(`Server running on port ${port}`);
