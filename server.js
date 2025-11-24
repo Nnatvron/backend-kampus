@@ -17,13 +17,18 @@ admin.initializeApp({
 const app = express();
 
 // ===== CORS =====
+import cors from 'cors';
 app.use(cors({
-  origin: ["https://ubsioneplus.vercel.app", "http://localhost:5173"],
+  origin: "https://ubsioneplus.vercel.app",
   methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-  credentials: true,
+  allowedHeaders: ["Content-Type", "Authorization"],
+  credentials: true
 }));
 
-app.use(bodyParser.json());
+// Jangan lupa handle OPTIONS
+app.options("*", (req, res) => {
+  res.sendStatus(200);
+});
 
 // ===== NODEMAILER TRANSPORT =====
 const transporter = nodemailer.createTransport({
@@ -104,7 +109,7 @@ app.post("/api/auth/forgot-password", async (req, res) => {
     });
 
     return res.status(200).json({ message: "Link reset password telah dikirim ke email Anda." });
-  } catch (err) {
+  } catch (err) { 
     console.error(err);
     return res.status(500).json({ message: "Gagal mengirim email reset password." });
   }
