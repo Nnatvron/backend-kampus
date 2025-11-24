@@ -1,1 +1,5 @@
 .vercel
+.env
+service-account.json
+firebase-key.json
+*.pem
