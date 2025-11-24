@@ -1,44 +1,47 @@
+// server.js
 import express from "express";
 import cors from "cors";
-import authRoutes from "./routes/authRoutes.js";
+import bodyParser from "body-parser";
 
 const app = express();
 
-app.use(express.json());
+// ======= CORS =======
+app.use(cors({
+  origin: "https://ubsioneplus.vercel.app", // frontend origin
+  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+  credentials: true
+}));
 
-// Allowed origins (tanpa slash)
-const allowedOrigins = [
-  "http://localhost:5173",
-  "http://localhost",
-  "https://web-kampus.vercel.app",
-  "https://backend-kampus.vercel.app",
-  "https://ubsioneplus.vercel.app",
-];
+app.use(bodyParser.json());
 
-app.use(
-  cors({
-    origin: (origin, callback) => {
-      // Allow requests without origin (Postman, server-to-server)
-      if (!origin || allowedOrigins.includes(origin)) {
-        callback(null, true);
-      } else {
-        console.log("❌ CORS Blocked Origin:", origin);
-        callback(new Error("CORS: Origin not allowed"));
-      }
-    },
-    credentials: true,
-    methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
-    allowedHeaders: ["Content-Type", "Authorization"],
-  })
-);
-
-// Handle OPTIONS preflight request
-app.options("*", (req, res) => {
-  res.sendStatus(200);
+// ======= ROUTES =======
+app.post("/api/auth/register", (req, res) => {
+  // contoh response
+  res.json({ message: "Registrasi berhasil!" });
 });
 
-// Routes
-app.use("/api/auth", authRoutes);
+// tambahkan route login, reset password, dsb
 
-// Vercel uses export — no listen()
-export default app;
+const port = process.env.PORT || 3000;
+app.listen(port, () => {
+  console.log(`Server running on port ${port}`);
+});
+
+export default function handler(req, res) {
+  res.setHeader("Access-Control-Allow-Origin", "https://ubsioneplus.vercel.app");
+  res.setHeader("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
+  res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
+  res.setHeader("Access-Control-Allow-Credentials", "true");
+
+  if (req.method === "OPTIONS") {
+    return res.status(200).end();
+  }
+
+  // contoh register route
+  if (req.method === "POST") {
+    // handle register
+    return res.json({ message: "Registrasi berhasil!" });
+  }
+
+  res.status(404).json({ message: "Route tidak ditemukan" });
+}
