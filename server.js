@@ -17,12 +17,12 @@ admin.initializeApp({
 const app = express();
 
 // ===== CORS =====
-import cors from 'cors';
 app.use(cors({
   origin: "https://ubsioneplus.vercel.app",
   methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
   allowedHeaders: ["Content-Type", "Authorization"],
   credentials: true
+  optionsSuccessStatus: 200, // <--- penting untuk preflight
 }));
 
 // Jangan lupa handle OPTIONS
