@@ -1,17 +1,23 @@
 import express from "express";
-import { register, login, forgotPassword } from "../controllers/authControllers.js";
+import {
+  register,
+  login,
+  forgotPassword,
+  resetPassword
+} from "../controllers/authControllers.js";
 
 const router = express.Router();
 
-// POST /api/auth/register
+// Register User
 router.post("/register", register);
 
-// POST /api/auth/login
+// Login User
 router.post("/login", login);
 
-// POST /api/auth/forgot-password
+// Send Reset Email
 router.post("/forgot-password", forgotPassword);
 
-// Reset password via Firebase email link (no backend route needed)
+// Reset User Password (frontend calls this with token)
+router.post("/reset-password/:token", resetPassword);
 
 export default router;

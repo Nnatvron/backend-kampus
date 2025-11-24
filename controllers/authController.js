@@ -3,6 +3,8 @@ import {
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
   sendPasswordResetEmail,
+  verifyPasswordResetCode,
+  confirmPasswordReset
 } from "firebase/auth";
 import { doc, setDoc, getDoc } from "firebase/firestore";
 
@@ -88,5 +90,26 @@ export const forgotPassword = async (req, res) => {
       return res.status(404).json({ message: "Email tidak ditemukan" });
     }
     res.status(500).json({ message: err.message });
+  }
+};
+
+// ==================== RESET PASSWORD (BARU) ====================
+export const resetPassword = async (req, res) => {
+  try {
+    const { token } = req.params;
+    const { password } = req.body;
+
+    if (!password) return res.status(400).json({ message: "Password baru wajib diisi" });
+
+    // Verifikasi token reset
+    await verifyPasswordResetCode(auth, token);
+
+    // Update password
+    await confirmPasswordReset(auth, token, password);
+
+    res.status(200).json({ message: "Password berhasil diperbarui" });
+  } catch (err) {
+    console.error("Reset password error:", err);
+    res.status(400).json({ message: "Token tidak valid atau telah kadaluarsa" });
   }
 };

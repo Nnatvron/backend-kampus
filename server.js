@@ -6,23 +6,37 @@ const app = express();
 
 app.use(express.json());
 
+// Allowed origins (tanpa slash)
+const allowedOrigins = [
+  "http://localhost:5173",
+  "http://localhost",
+  "https://web-kampus.vercel.app",
+  "https://backend-kampus.vercel.app",
+  "https://ubsioneplus.vercel.app",
+];
+
 app.use(
   cors({
-    origin: [
-      "http://localhost:5173",
-      "https://web-kampus.vercel.app"
-      "https://backend-kampus.vercel.app/"
-      "https://ubsioneplus.vercel.app/"
-    ],
+    origin: (origin, callback) => {
+      // Allow requests without origin (Postman, server-to-server)
+      if (!origin || allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        console.log("❌ CORS Blocked Origin:", origin);
+        callback(new Error("CORS: Origin not allowed"));
+      }
+    },
     credentials: true,
+    methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization"],
   })
 );
 
-// routes
+// Handle OPTIONS preflight request
+app.options("*", cors());
+
+// Routes
 app.use("/api/auth", authRoutes);
 
-// ❌ Hapus ini (Vercel nggak butuh):
-// app.listen(5000);
-
-// ✅ Export sebagai serverless function:
+// Vercel uses export — no listen()
 export default app;
