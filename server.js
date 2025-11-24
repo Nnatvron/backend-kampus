@@ -33,7 +33,9 @@ app.use(
 );
 
 // Handle OPTIONS preflight request
-app.options("*", cors());
+app.options("*", (req, res) => {
+  res.sendStatus(200);
+});
 
 // Routes
 app.use("/api/auth", authRoutes);
