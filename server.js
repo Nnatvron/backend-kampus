@@ -58,9 +58,9 @@ const transporter = nodemailer.createTransport({
 
 // -------- REGISTER --------
 app.post("/api/auth/register", async (req, res) => {
-  const { nim, nama, email, password, phone, jurusan, jenjang } = req.body;
+  const { email, password, nama } = req.body;
   if (!email || !password || !nama || !nim) {
-    return res.status(400).json({ message: "Field wajib diisi!" });
+    if (!email || !password || !nama) return res.status(400).json({ message: "Field wajib diisi!" });
   }
 
   try {
@@ -71,10 +71,10 @@ app.post("/api/auth/register", async (req, res) => {
     });
 
     // opsional: simpan data tambahan ke Firestore
-    return res.status(201).json({ message: "Registrasi berhasil!", user: userRecord });
+    return res.status(201).json({ message: "Registrasi berhasil", user });
   } catch (err) {
     console.error(err);
-    return res.status(500).json({ message: err.message || "Registrasi gagal." });
+    return res.status(500).json({ message: err.message });
   }
 });
 
