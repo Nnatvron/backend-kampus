@@ -1,14 +1,11 @@
 {
   "version": 2,
   "builds": [
-    {
-      "src": "server.js",
-      "use": "@vercel/node"
-    }
+    { "src": "server.js", "use": "@vercel/node" }
   ],
   "env": {
     "NODE_ENV": "production",
-    "EMAIL_USER": "your-email@gmail.com",
-    "EMAIL_PASS": "your-email-password"
+    "EMAIL_USER": "natravelsitra07@gmail.com",
+    "EMAIL_PASS": "xnysfzya tsly wwgq"
   }
 }

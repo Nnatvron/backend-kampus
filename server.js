@@ -1,6 +1,5 @@
 // server.js
 import { createServer } from "http";
-import app from "./api/auth"; // kalau pakai struktur api/
 import express from "express";
 import cors from "cors";
 import bodyParser from "body-parser";
@@ -41,9 +40,7 @@ app.use(cors({
 }));
 
 // Jangan lupa handle OPTIONS
-app.options("*", (req, res) => {
-  res.sendStatus(200);
-});
+app.options("*", (req, res) => res.sendStatus(200));
 
 // ===== NODEMAILER TRANSPORT =====
 const transporter = nodemailer.createTransport({
@@ -58,10 +55,11 @@ const transporter = nodemailer.createTransport({
 
 // -------- REGISTER --------
 app.post("/api/auth/register", async (req, res) => {
-  const { email, password, nama } = req.body;
-  if (!email || !password || !nama || !nim) {
-    if (!email || !password || !nama) return res.status(400).json({ message: "Field wajib diisi!" });
-  }
+const { email, password, nama, nim } = req.body;
+if (!email || !password || !nama || !nim) {
+  return res.status(400).json({ message: "Field wajib diisi!" });
+}
+
 
   try {
     const userRecord = await admin.auth().createUser({
@@ -71,7 +69,7 @@ app.post("/api/auth/register", async (req, res) => {
     });
 
     // opsional: simpan data tambahan ke Firestore
-    return res.status(201).json({ message: "Registrasi berhasil", user });
+    return res.status(201).json({ message: "Registrasi berhasil", user: userRecord });
   } catch (err) {
     console.error(err);
     return res.status(500).json({ message: err.message });
