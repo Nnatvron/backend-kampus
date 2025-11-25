@@ -1,3 +1,4 @@
+// api/index.js
 import express from "express";
 import cors from "cors";
 import admin from "firebase-admin";
@@ -27,16 +28,16 @@ if (!admin.apps.length) {
 const app = express();
 app.use(express.json());
 
+// ===== CORS =====
 app.use(
   cors({
     origin: "https://ubsioneplus.vercel.app",
     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization"],
-    credentials: true,
   })
 );
 
-// Handle OPTIONS
+// Handle OPTIONS preflight
 app.options("*", (req, res) => res.sendStatus(200));
 
 // ================= NODEMAILER =================
