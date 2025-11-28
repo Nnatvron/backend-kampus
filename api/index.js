@@ -31,7 +31,7 @@ app.use(express.json());
 // ===== CORS =====
 app.use(
   cors({
-    origin: "https://ubsioneplus.vercel.app",
+    origin: "https://ubsioneplus.vercel.app/",
     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization"],
   })
@@ -110,7 +110,7 @@ app.post("/api/auth/forgot-password", async (req, res) => {
 
   try {
     const link = await admin.auth().generatePasswordResetLink(email, {
-      url: "https://ubsioneplus.vercel.app/login",
+      url: "https://ubsioneplus.vercel.app/",
       handleCodeInApp: true,
     });
 
