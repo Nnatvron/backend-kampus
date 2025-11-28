@@ -110,7 +110,7 @@ app.post("/api/auth/forgot-password", async (req, res) => {
 
   try {
     const link = await admin.auth().generatePasswordResetLink(email, {
-      url: "https://ubsioneplus.vercel.app/",
+      url: "https://ubsioneplus.vercel.app/reset",
       handleCodeInApp: true,
     });
 

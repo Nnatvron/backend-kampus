@@ -126,10 +126,10 @@ app.post("/api/auth/forgot-password", async (req, res) => {
     return res.status(400).json({ message: "Email wajib diisi!" });
 
   try {
-    const link = await admin.auth().generatePasswordResetLink(email, {
-      url: "https://ubsioneplus.vercel.app/",
-      handleCodeInApp: true,
-    });
+const link = await admin.auth().generatePasswordResetLink(email, {
+  url: "https://ubsioneplus.vercel.app/reset",
+  handleCodeInApp: true,
+});
 
     await transporter.sendMail({
       from: process.env.EMAIL_USER,
